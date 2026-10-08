@@ -1,0 +1,2 @@
+# Domain vocabulary that is prose, not code.
+doc-valid-idents = ["..", "OLE", "OOXML", "FILETIME", "FMTID", "CodePage", "AppVersion", "TotalTime", "DocSecurity", "ScaleCrop", "LinksUpToDate", "SharedDoc", "HyperlinksChanged", "HyperlinkBase", "HeadingPairs", "TitlesOfParts", "CharactersWithSpaces", "HiddenSlides", "MMClips", "W3CDTF", "PowerPoint"]

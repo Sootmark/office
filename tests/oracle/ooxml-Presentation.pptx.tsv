@@ -1,0 +1,38 @@
+app	AppVersion	16.0000
+app	Application	Microsoft Office PowerPoint
+app	Company	Société Exemple
+app	DocSecurity	2
+app	HeadingPairs	Theme=1 | Slide Titles=2
+app	HiddenSlides	1
+app	HyperlinkBase	https://example.org/base/
+app	HyperlinksChanged	true
+app	LinksUpToDate	true
+app	MMClips	3
+app	Manager	Carol Example
+app	Notes	2
+app	Paragraphs	30
+app	PresentationFormat	Widescreen
+app	ScaleCrop	true
+app	SharedDoc	true
+app	Slides	4
+app	Template	Office Theme
+app	TitlesOfParts	Office Theme | Results | Next steps
+app	TotalTime	95
+app	Words	120
+core	category	Finance
+core	contentStatus	Draft
+core	created	1614834367000000
+core	creator	Alice Example
+core	description	Notes <for> the board
+core	identifier	DOC-0042
+core	keywords	budget; review
+core	language	fr-FR
+core	lastModifiedBy	Bob Example
+core	lastPrinted	1614927600000000
+core	modified	1614939630123456
+core	revision	12
+core	subject	Quarterly review
+core	title	R&D <draft> café — plan
+core	version	1.3
+custom	Client	Acme & Co
+custom	Reviewed	true

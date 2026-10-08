@@ -1,0 +1,27 @@
+plaso.tsv: what plaso (the log2timeline/plaso:20260720 Docker image) reads
+from tests/fixtures/plaso/Document.doc, tests/fixtures/plaso/Document.docx and
+tests/fixtures/written/Presentation.pptx with its olecf/olecf_summary,
+olecf/olecf_document_summary and czip/oxml plugins (the olecf parser adds its
+default plugin's olecf:item events), one line per event: file, data type,
+timestamp description, time (microseconds), and every value plaso gives.
+Written from plaso's output, not from this crate:
+
+    # Document.doc and Document.docx in /tmp/smo/office/in/,
+    # Presentation.pptx in /tmp/smo/office_written/in/
+    sudo docker run --rm -v /tmp/smo/office:/data log2timeline/plaso:20260720 log2timeline --status_view none -q --parsers 'olecf/olecf_summary,olecf/olecf_document_summary,czip/oxml' --storage-file /data/out.plaso /data/in
+    sudo docker run --rm -v /tmp/smo/office:/data log2timeline/plaso:20260720 psort --status_view none -q -o json_line -w /data/out.jsonl /data/out.plaso
+    # the same two commands with /tmp/smo/office_written, giving office_written.jsonl
+    python3 -I tests/oracle/plaso_tsv.py office.jsonl office_written.jsonl > tests/oracle/plaso.tsv
+
+ole-Document.doc.tsv: every property of Document.doc's two property set
+streams, read by ole_props.py (Python standard library only, written from
+MS-CFB and MS-OLEPS, not from this crate):
+
+    python3 -I tests/oracle/ole_props.py tests/fixtures/plaso/Document.doc > tests/oracle/ole-Document.doc.tsv
+
+ooxml-Document.docx.tsv, ooxml-Presentation.pptx.tsv: every core, extended
+and custom property of the two packages, read by ooxml_props.py (zipfile and
+xml.etree, not this crate):
+
+    python3 -I tests/oracle/ooxml_props.py tests/fixtures/plaso/Document.docx > tests/oracle/ooxml-Document.docx.tsv
+    python3 -I tests/oracle/ooxml_props.py tests/fixtures/written/Presentation.pptx > tests/oracle/ooxml-Presentation.pptx.tsv

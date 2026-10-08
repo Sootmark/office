@@ -1,0 +1,6 @@
+Presentation.pptx was written for these tests by make_pptx.py, in this
+directory (python3 -I tests/fixtures/written/make_pptx.py
+tests/fixtures/written/Presentation.pptx); not compressed further
+(SHA-256 4d490139e34e11eb669612b144629a2f254b7e064b193a30aa183a5c429fa778).
+It is a minimal package holding only property parts; the names in it are
+made up.
