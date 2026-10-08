@@ -9,8 +9,10 @@
 //! author, times, counts, thumbnail, application) and
 //! `\u{5}DocumentSummaryInformation` (category, company, manager, more
 //! counts, the parts of the document, the application's version; its
-//! second section holds the user-defined properties). The file's storages
-//! and streams, with their modification times, are listed too.
+//! second section holds the user-defined properties), read from the root
+//! storage (an embedded object's are its own). The file's storages and
+//! streams, with their paths and their creation and modification times,
+//! are listed too.
 //!
 //! **Office Open XML** packages keep it in XML parts found through
 //! `_rels/.rels`: `docProps/core.xml` (Dublin Core: title, creator,
@@ -62,12 +64,20 @@ pub enum Format {
 pub struct Item {
     /// Its name.
     pub name: String,
+    /// The names from the root's down to its own, joined by `/`
+    /// (`Root Entry/MsoDataStore`); an item the directory tree doesn't reach
+    /// from the root has its name alone.
+    pub path: String,
     /// Storage, stream or root.
     pub kind: ItemKind,
     /// Its size in bytes (the root's is that of the mini stream).
     pub size: u64,
-    /// When it was last modified (storages; usually not set for streams).
-    pub modified: Ts,
+    /// When it was created (storages; not recorded for streams and usually
+    /// the root).
+    pub created: Option<Ts>,
+    /// When it was last modified (storages and the root; not recorded for
+    /// streams).
+    pub modified: Option<Ts>,
 }
 
 /// What a compound file's item is.

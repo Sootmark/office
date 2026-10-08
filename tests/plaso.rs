@@ -3,7 +3,7 @@
 //! for these tests), with every value it gives, read the same
 //! (`tests/oracle/plaso.tsv`, written from plaso's output with its
 //! `olecf_summary`, `olecf_document_summary`, `olecf_default` and `oxml`
-//! plugins): 14 events, 12 of them read.
+//! plugins): all 14 events.
 //!
 //! How plaso's names map here, and where it differs:
 //!
@@ -18,9 +18,6 @@
 //! - plaso's `links_up_to_date` for a compound file is `PIDDSI_LINKSDIRTY`
 //!   as stored, which says the opposite: it is `links_dirty` here.
 //! - plaso leaves out an editing time of zero; the crate reports zero.
-//! - plaso's two `olecf:item` creation times (storage `MsoDataStore` and
-//!   its child) aren't read: the compound file reader (`sootmark-shell`
-//!   0.2.2) gives each item's modification time, not its creation time.
 
 use std::fmt::Display;
 use std::time::Duration;
@@ -29,7 +26,6 @@ use common::time::Ts;
 use office::{Document, ItemKind};
 
 const PLASO_EVENTS: usize = 14;
-const UNREAD_CREATION_TIMES: usize = 2;
 const SECONDS_PER_MINUTE: u64 = 60;
 const TICKS_PER_MICROSECOND: i64 = 10;
 
@@ -124,7 +120,7 @@ fn compound_file_events(file: &str, document: &Document) -> Vec<String> {
         ("Document Creation Time", p.created),
         ("Document Last Save Time", p.modified),
         ("Document Last Printed Time", p.last_printed),
-        ("Item Modification Time", Some(root.modified)),
+        ("Item Modification Time", root.modified),
     ];
     let mut events: Vec<String> = summary_times
         .iter()
@@ -132,26 +128,27 @@ fn compound_file_events(file: &str, document: &Document) -> Vec<String> {
             event(file, "olecf:summary_info", description, time?, &summary)
         })
         .collect();
-    events.extend(event(
-        file,
-        "olecf:document_summary_info",
-        "Item Modification Time",
-        root.modified,
-        &document_summary,
-    ));
-    events.extend(document.items.iter().filter_map(|item| {
+    events.extend(root.modified.and_then(|time| {
+        event(
+            file,
+            "olecf:document_summary_info",
+            "Item Modification Time",
+            time,
+            &document_summary,
+        )
+    }));
+    for item in &document.items {
         let values = [
             value("name", Some(&item.name)),
             value("size", Some(item.size)),
         ];
-        event(
-            file,
-            "olecf:item",
-            "Content Modification Time",
-            item.modified,
-            &values,
-        )
-    }));
+        for (description, time) in [
+            ("Creation Time", item.created),
+            ("Content Modification Time", item.modified),
+        ] {
+            events.extend(time.and_then(|t| event(file, "olecf:item", description, t, &values)));
+        }
+    }
     events
 }
 
@@ -219,15 +216,8 @@ fn every_event_as_plaso_reads_it() {
         env!("CARGO_MANIFEST_DIR")
     ))
     .unwrap();
-    let (creation_times, expected): (Vec<&str>, Vec<&str>) = oracle
-        .lines()
-        .partition(|line| line.contains("\tolecf:item\tCreation Time\t"));
     assert_eq!(oracle.lines().count(), PLASO_EVENTS);
-    assert_eq!(creation_times.len(), UNREAD_CREATION_TIMES);
-    let expected: Vec<String> = expected
-        .into_iter()
-        .map(without_known_differences)
-        .collect();
+    let expected: Vec<String> = oracle.lines().map(without_known_differences).collect();
     assert_eq!(got, expected);
 }
 

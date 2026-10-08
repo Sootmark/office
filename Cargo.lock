@@ -366,7 +366,7 @@ checksum = "16039a30e3d12a335537236722ba00a8da0b5dfdfcf20785b75dea78f523160e"
 
 [[package]]
 name = "sootmark-office"
-version = "0.1.0"
+version = "0.2.0"
 dependencies = [
  "proptest",
  "sootmark-common",
@@ -376,9 +376,12 @@ dependencies = [
 
 [[package]]
 name = "sootmark-shell"
-version = "0.2.2"
+version = "0.3.0"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "727dfc198e8216a4ad5f0fa5bef028f59148999782fc0c5f7c1056b6924759f7"
+checksum = "fb16770f74ba791b7f341abd8532e9d89a747997fb4f55e09ba1566e5f0f448a"
+dependencies = [
+ "sootmark-common",
+]
 
 [[package]]
 name = "sootmark-zip"

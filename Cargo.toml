@@ -1,6 +1,6 @@
 [package]
 name = "sootmark-office"
-version = "0.1.0"
+version = "0.2.0"
 edition = "2021"
 rust-version = "1.80"
 description = "Office document metadata for forensics: authors, last saved by, created, saved and printed times, edit time, counts, company and template, from 97-2003 compound files (OLE property sets) and Office Open XML (docx, xlsx, pptx)."
@@ -16,7 +16,7 @@ name = "office"
 
 [dependencies]
 common = { package = "sootmark-common", version = "0.3.7" }
-shell = { package = "sootmark-shell", version = "0.2.2" }
+shell = { package = "sootmark-shell", version = "0.3.0" }
 zip = { package = "sootmark-zip", version = "0.4.0" }
 
 [dev-dependencies]

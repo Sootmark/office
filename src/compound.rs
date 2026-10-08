@@ -1,10 +1,8 @@
 //! Office 97–2003 documents and other compound files: the summary and
 //! document summary information property sets, read into [`Properties`].
 //!
-//! The streams are looked up by name in the whole directory: the first one
-//! in directory order is read (the reader doesn't keep the directory's
-//! tree, so an embedded object's property sets can't be told from the
-//! document's own; Office writes the document's first).
+//! The streams are read from the root storage only: an embedded object's
+//! property sets, in a storage of their own, describe it, not the document.
 
 use std::time::Duration;
 
@@ -78,9 +76,9 @@ mod piddsi {
 /// stream.
 pub fn has_property_sets(data: &[u8]) -> bool {
     CompoundFile::parse(data).is_ok_and(|file| {
-        file.entries.iter().any(|e| {
-            e.kind == STREAM && (e.name == SUMMARY_STREAM || e.name == DOCUMENT_SUMMARY_STREAM)
-        })
+        [SUMMARY_STREAM, DOCUMENT_SUMMARY_STREAM]
+            .iter()
+            .any(|name| root_stream(&file, name).is_some())
     })
 }
 
@@ -89,6 +87,9 @@ pub fn read(data: &[u8]) -> Result<Document, Error> {
     let file = CompoundFile::parse(data).map_err(|e| Error(format!("compound file: {e}")))?;
     let mut document = Document::new(Format::Ole);
     document.items = file.entries.iter().map(item).collect();
+    document
+        .problems
+        .extend(file.problems.iter().map(|p| format!("directory: {p}")));
     for name in [SUMMARY_STREAM, DOCUMENT_SUMMARY_STREAM] {
         if let Some(set) = property_set(&file, name, &mut document.problems) {
             apply(&set, &mut document);
@@ -100,6 +101,7 @@ pub fn read(data: &[u8]) -> Result<Document, Error> {
 fn item(entry: &Entry) -> Item {
     Item {
         name: entry.name.clone(),
+        path: entry.path.clone(),
         kind: match entry.kind {
             STORAGE => ItemKind::Storage,
             STREAM => ItemKind::Stream,
@@ -107,8 +109,17 @@ fn item(entry: &Entry) -> Item {
             other => ItemKind::Other(other),
         },
         size: entry.size,
-        modified: Ts::from_filetime(entry.modified),
+        created: entry.created,
+        modified: entry.modified,
     }
+}
+
+/// The stream named `name` in the root storage.
+fn root_stream<'f>(file: &'f CompoundFile<'_>, name: &str) -> Option<&'f Entry> {
+    let root = file.entries.iter().position(|e| e.kind == ROOT)?;
+    file.entries
+        .iter()
+        .find(|e| e.kind == STREAM && e.parent == Some(root) && e.name == name)
 }
 
 /// The property set in stream `name`; damage to `problems`.
@@ -118,8 +129,8 @@ fn property_set(
     problems: &mut Vec<String>,
 ) -> Option<PropertySet> {
     let label = stream_label(name);
-    let stream = match file.stream(name) {
-        Ok(stream) => stream?,
+    let stream = match file.contents(root_stream(file, name)?) {
+        Ok(stream) => stream,
         Err(e) => {
             problems.push(format!("{label}: {e}"));
             return None;
