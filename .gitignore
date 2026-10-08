@@ -2,3 +2,4 @@
 .DS_Store
 # Local files, never committed.
 /tests/fixtures-real/
+__pycache__/
